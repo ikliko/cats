@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://use.fontawesome.com/releases/v5.0.7/css/all.css" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/site.css">
+    <link rel="shortcut icon" type="image/png" href="/images/pawprint.ico"/>
+    <title>Cat Shelter</title>
+</head>
+
+<body>
+<header>
+    {{nav-menu}}
+    <h1>Cat Shelter</h1>
+    <form action="/search">
+        <input type="text" name="q" value="{{query}}">
+        <button>Search</button>
+    </form>
+</header>
+
+<main>
+    <section class="cats">
+        <ul>{{cat-list-items}}</ul>
+    </section>
+</main>
+
+<script>
+    (function highlightSearchTerms() {
+        const queryParams = Object.fromEntries(
+            location.search.slice(1)
+                .split('&')
+                .map(e => e.split('='))
+        );
+
+        if (!queryParams.q) {
+            return;
+        }
+
+        function highlightSearches(text) {
+            const wrapper = document.createElement('span');
+            const regex = new RegExp(queryParams.q, 'mi');
+
+            if (!regex.test(text)) {
+                console.log(text);
+                wrapper.textContent = text;
+                return wrapper;
+            }
+
+            let m = regex.exec(text);
+
+            const highlighter = document.createElement('span');
+            highlighter.classList.add('query-highlighter')
+            highlighter.textContent = m[0];
+
+            text.toLowerCase().split(m[0].toLowerCase()).filter(e => e).map(e => {
+                const eWrap = document.createElement('span');
+                eWrap.textContent = e;
+
+                return [highlighter, eWrap];
+            }).flat().forEach(e => {
+                wrapper.appendChild(e.cloneNode(true));
+            })
+
+            return wrapper;
+        }
+
+        function checkForHighlight(elm) {
+            if (!elm) {
+                return;
+            }
+
+            const text = elm.textContent;
+            elm.innerHTML = '';
+            elm.appendChild(highlightSearches(text));
+        }
+
+
+        Array.from(document.querySelectorAll('.cats ul li'))
+            .forEach(elm => {
+                checkForHighlight(elm.querySelector('h3'));
+                Array.from(elm.querySelectorAll('p'))
+                    .forEach(p => {
+                        checkForHighlight(p);
+                    })
+            })
+    }());
+</script>
+
+</body>
+
+</html>
